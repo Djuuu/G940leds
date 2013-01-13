@@ -1,0 +1,251 @@
+Colors can be:
+g or 1 for green
+r or 2 for red
+a or 3 for amber
+o or 0 for off
+
+
+The command list has the following format
+-------
+command(s)
+that are
+similar
+-------
+Description
+
+Example usage:
+
+
+
+-------
+Hello
+Bye
+-------
+Those two commands do the same thing, they just print the argument
+to the console.
+Note: Other commands can't be sent in the same packet as those, as
+	  they also would be printed! Also, dont end with ";" as with other
+	  commands
+Example:
+	Hello=Data is coming!
+	Bye=Simulator closed, no more data
+	
+------
+DisableAutoUpdate
+EnableAutoUpdate
+Set
+------
+Normally the leds get updated after every packet (not every command) but if you send 
+alot of commands it might be nice not to have them just in one packet. Then use 
+DisableAutoUpdate to avoid the flickering and send Set to update.
+Example:
+	DisableAutoUpdate=;
+	<set button 1 green>
+	<set button 1 red>
+	Set=;
+Without disabling autoupdate button 1 would be flickering.
+
+-------
+Leds
+-------
+This is the most basic command, taking a 8 character string as argument and 
+setting all leds to the specified color.
+Example:
+	Leds=grao1230;
+This will light P1 and P5 to green, P2 and P6 to red, P3 and P7 to amber
+and P4 and P8 will be off.
+
+------
+SetLed
+------
+This will set one button to a specified color taking two characters
+as argument. The first the button and the second the color.
+Example (setting button 1 to green, 2 to red and making sure 3 is off):
+	SetLed=1g;SetLed=22;SetLed=3o;
+	
+------
+SetOneGreen
+SetOneRed
+SetOneAmber
+ClearOne
+------
+These take one char as argument as set that button to the color
+from the command name.
+Example:
+	SetOneGreen=1;SetOneRed=2;ClearOne=2;
+Will set only P1 to green
+
+-------
+SetAll
+-------
+Takes one char as argument and sets all buttons to that color.
+Example
+	SetAll=a;
+	
+--------
+SetGreen
+SetRed
+SetAmber
+--------
+These take and 8 character argument and sets all buttons where
+the corresponding character isn't '0' or 'o' to the color from
+the color name. SetGreen will not turn off the red led if the
+character is '0' or 'o'. Same goes with SetRed but with the 
+green led. SetAmber however will set it to amber or turn the
+button off completely.
+Example:
+	Leds=rrrrrrrr; // Imagine all leds red
+	SetGreen=0o0o0o11; // Button 7 and 8 will be green, rest will be red
+	SetAmber=110o0o0o; // Button 1 and 2 will be amber, rest will be off
+	
+------
+AddGreen
+AddRed
+------
+Similiar to SetGreen etc, but will never shut of a LED. Just turns
+it on for the buttons that aren't '0' or 'o'
+Example:
+	Leds=gggggggg; // All green
+	AddRed=10101010; // Every other button will now be amber
+
+------
+AddGreenIfRed
+AddRedIfGreen
+------
+Similar to AddGreen etc, but will only turn on green if red
+is active and vice verse.
+Example:
+	Leds=gg110000; // Top row green
+	AddRedIfGreen=11111111; // Top row will be amber, bottom row still off
+
+	
+	
+--------------------------------
+*******************************
+DCS Ka-50 BlackShark
+--------------------------------
+The following commands are meant to simplify
+interaction with DCS Ka-50. Instead of taking 'a', 'g' etc as arguments
+they take '0.0' or '0.3' or '1.0' etc. This removes the need to use
+conditionals in the LUA code, making it run faster and not cause
+stuttering in the game.
+
+Note that the float returned by DCS has to be transformed into
+a string in the lua code. At the top of G940leds.lua
+i have a small function doing this, and i use it in all the examples
+as well.
+
+The commands are showcased in the g940leds_example function
+	
+	
+--------------
+DCSSetOneGreen
+DCSSetOneGreen
+DCSSetOneAmber
+--------------
+Takes two arguents, but four characters. The first argument and char
+is what button to change, and the second arguemnt, last three characters,
+is a float representing the status of one switch/button etc in DCS.
+If the second arguement is 0.1, 0.3 or 1.0 the button will be set to
+the color from the command name. If it is anything else the button
+will not change color.
+Example:
+Lets say you want P1 to be green if training mode isn't activated
+and red if it is. The float returned from DCS will be 1.0 if training mode
+is activated so the following can be used: (assume training is a 3char string
+representing the float from DCS)
+	SetOneGreen=1; // Set P1 to green
+	DCSSetOneRed=1<training>; // Change it to red if training mode is one
+	DCSSetOneAmber=21.0; // Set button two to amber
+	DCSSetOneGreen=30.1; // Set button three to green
+
+	
+--------------
+DCSSetGreen
+DCSSetRed
+DCSSetAmber
+--------------
+Takes eight arguments, 24 characters. Each argument is of the form
+x.x and 0.1, 0.3 and 1.0 will cause the corresponding led to be turned on.
+SetGreen and SetRed will only turn if the green and red led respectively if
+the argument is something else, while SetAmber will turn both leds off(ie,
+both the green and red led) if the argument isn't 0.1, 0.3 or 1.0
+Example (here i have inserted a space between arguments to make reading easier,
+dont do that):
+	Leds=2222gggg; // Top row red, bottom row green
+	DCSSetGreen=0.1 0.3 1.0 0.0    0.0 0.0 1.0 0.1; // P1-P3 will be amber, P4 red. P5P6 will be off and P7P8 will be green
+	DCSSetAmber=1.01.01.01.00.00.00.00.0; // Top row will be amber and bottom off. This is the correct syntax as well
+
+--------------
+DCSAddGreen
+DCSAddRed
+DCSAddAmber
+--------------
+Same as DCSSetGreen etc, but will never turn a led off.
+Example:
+	Leds=00000000; // All off
+	DCSAddGreen=1.00.10.30.00.00.00.00.0; // P1-P3 green
+
+---------------
+DCSAddGreenIfRed
+DCSAddRedIfGreen
+---------------
+Similar to DCSAddGreen etc, but will only make buttons amber.
+Example:
+	Leds=gggg0000; //Top row green
+	DCSAddRedIfGreen=1.01.01.01.01.01.01.01.0; // Top row will be amber, bottom still off
+	
+	
+
+----------------
+DCSBurstLength
+----------------
+Special command for the burst length. Takes two arguments (four chars).
+The first is the button to set and the second the burst length indicator.
+The burst length indicator from DCS will be 0.0 for short, 0.1 for medium
+and 0.2 for long. And the colors will be green for short, amber for medium
+and red for long
+Example:
+	DCSBurstLength=1<burstlength>; // Set P1 to burst length
+	
+------------------
+DCSNavigationLights
+------------------
+Works the same as BurstLength. The indicator will be 0.0 for off, 0.1 for 10%
+0.2 for 50% and 0.3 for 100%. The colors will be: off, amber, green and red.
+Example:
+	DCSNavigationLights=20.2; // P2 will be green
+	
+------------------
+DCSBaroRalt
+------------------
+This is to show the setting of the switch that tells the AP how to keep the
+altitude. Arguments the same way as BurstLength. 0.0 is barometric. 0.5 is 
+in the middle (what does that do??) and 1.0 is radar altitude.
+The colors will be off for middle, red for radar and green for barometric.
+Example:
+	DCSBaroRalt=31.0; // P3 will be red
+	
+------------------
+DCSHeadingTrack
+------------------
+Meant to show the switch that switches the AP between heading, track and 
+current course following. 0.0 is heading, 0.5 current course and 1.0 track.
+The colors will be green for track, amber for course and red for track.
+Example:
+	DCSHeadingTrack=40.5; // P4 will be amber
+	
+------------------
+DCSGear
+------------------
+This is meant to show the three leds from the KA-50 cockpit as one.
+It takes seven arguments, button + six in the form x.x and their meaning is:
+| left up | left down | right up | right down | nose up | nose down |
+0.0 means that the argument is "false" and 1.0 that it's true (see example)
+If every wheel is up, the lamp will be red
+If every wheel is down, the lamp will be green
+If somewhere in between, the lamp will be amber
+Example (spaces inserted for readability, dont use in code)
+	DCSGear=5 1.00.0 1.00.0 1.00.0: //P5 will be red, because all wheels are up
+	DCSGear=6 0.01.0 0.01.0 0.01.0: //P6 will be green, because all wheels are down
+	DCSGear=7 1.00.0 1.00.0 0.00.0: //P7 will be amber, because nose gear is not locked up or down
