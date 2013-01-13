@@ -1,9 +1,55 @@
-G940leds version 1.1
+G940leds
+========
 
+G940leds version 1.1 bis
+
+This is a total redesign of the .LUA part that works with the program of Martin Larsson (Morg) 
+to control the leds on the Logitech G940 throttle stick with exported data from Lock On / Digital Combat Simulator.
+
+My purposes were : 
+
+   - to make it work with Flaming Cliffs 2 
+   - to make the configuration easier
+   - to implement blinking lights
+   - to minimize the impact on Lock On original Export.lua
+   
+I have tried to reproduce morg's profile for DCS, but I can't test it. This part needs work from DCS users ;-)
+My implementation may not be very pertinent for DCS though : there is a lot more code than in Morg's
+
+-- Installation : 
+
+As you may have noticed, this is la ModMan package. Install with ModMan ;-)
+Then you have to add the following line at the end of your /Config/Export/Export.lua file : 
+
+dofile("./Config/Export/G940leds/G940leds.lua") 
+
+and make sure EnableExportScript is set to true in /Config/Export/Config.lua
+
+-- Configuration
+
+If you want to try this version with DCS, you have to change the game in :
+/Config/Export/G940leds/config.lua
+
+To choose the functions displayed by each button : /Config/Export/G940leds/[game-specific folder]/profile.lua
+To tweak the colors correspondig to each status  : /Config/Export/G940leds/[game-specific folder]/colors.lua
+
+-- Running
+
+Launch G940leds.exe before launching the game, and that's it.
+
+-- Forum thread
+
+http://forum.lockon.ru/showthread.php?t=45895
+
+-----------------------------------------------------------------------------------------------------------------------
+Original Readme.txt : 
+-----------------------------------------------------------------------------------------------------------------------
+
+G940leds version 1.1
 
 -- Disclaimer
 
-The program is written by me, martin larsson (nickname morg at forums.eagle.ru and morg@borgeby.se), and i take no
+The program is written by me, Martin Larsson (nickname morg at forums.eagle.ru and morg@borgeby.se), and i take no
 responsibility for anything. Please don't redistribute it without my knowledge, simply because i don't want outdated
 version roaming around. If you notify me first i can make sure you are noted when i have a new version.
 
@@ -121,7 +167,3 @@ a or 3 for amber
 o or 0 for off
 
 I haven't been really consistent with command names and what arguments they need, so please read command.txt carefully.
-
-
-
-
